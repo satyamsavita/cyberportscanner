@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Cyber Port Scanner</title>
+
+    <!-- Bootstrap -->
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Google Font -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Animate CSS -->
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+    <!-- Custom CSS -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="container py-5">
+
+    <!-- HEADER -->
+
+    <div class="text-center mb-5 animate__animated animate__fadeInDown">
+
+        <h1 class="title">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+            Cyber Port Scanner
+
+        </h1>
+
+        <p class="subtitle">
+
+            Professional Network Security Dashboard
+
+        </p>
+
+    </div>
+
+    <!-- SCAN PANEL -->
+
+    <div class="glass-card p-4 mb-4">
+
+        <div class="row">
+
+            <div class="col-md-12 mb-3">
+
+                <label class="form-label">
+
+                    <i class="fa-solid fa-globe"></i>
+
+                    Target IP / Hostname
+
+                </label>
+
+                <input
+                    id="ip"
+                    class="form-control cyber-input"
+                    placeholder="Example : 127.0.0.1">
+
+            </div>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+
+                    Start Port
+
+                </label>
+
+                <input
+                    id="start_port"
+                    type="number"
+                    value="1"
+                    class="form-control cyber-input">
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+
+                    End Port
+
+                </label>
+
+                <input
+                    id="end_port"
+                    type="number"
+                    value="100"
+                    class="form-control cyber-input">
+
+            </div>
+
+        </div>
+
+        <div class="row mt-3">
+
+            <div class="col-md-6">
+
+                <button
+                    id="scanBtn"
+                    class="btn btn-scan w-100"
+                    onclick="scanPorts()">
+
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    Scan Ports
+
+                </button>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <button
+    class="btn btn-export w-100"
+    onclick="generatePDF()">
+
+    <i class="fa-solid fa-file-pdf"></i>
+
+    Generate PDF Report
+
+</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- STATUS -->
+
+    <div class="glass-card p-4 mb-4">
+
+        <div class="d-flex justify-content-between">
+
+            <span>Status</span>
+
+            <span id="statusText">
+
+                Ready
+
+            </span>
+
+        </div>
+
+        <div class="progress mt-3">
+
+            <div
+                id="progressBar"
+                class="progress-bar">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DASHBOARD -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-circle-check icon-open"></i>
+
+                <h5>
+
+                    Open Ports
+
+                </h5>
+
+                <h2 id="openCount">
+
+                    0
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-circle-xmark icon-close"></i>
+
+                <h5>
+
+                    Closed Ports
+
+                </h5>
+
+                <h2 id="closedCount">
+
+                    0
+
+                </h2>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="dashboard-card">
+
+                <i class="fa-solid fa-clock icon-time"></i>
+
+                <h5>
+
+                    Scan Time
+
+                </h5>
+
+                <h2 id="scanTime">
+
+                    0 sec
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SEARCH -->
+
+    <div class="glass-card p-3 mb-4">
+
+        <input
+
+            id="searchBox"
+
+            class="form-control cyber-input"
+
+            placeholder="Search Port or Service"
+
+            onkeyup="searchResults()">
+
+    </div>
+
+    <!-- FILTER -->
+
+    <div class="text-center mb-4">
+
+        <button
+
+            class="btn btn-filter active"
+
+            onclick="filterPorts('all',event)">
+
+            All
+
+        </button>
+
+        <button
+
+            class="btn btn-filter"
+
+            onclick="filterPorts('open',event)">
+
+            Open
+
+        </button>
+
+        <button
+
+            class="btn btn-filter"
+
+            onclick="filterPorts('closed',event)">
+
+            Closed
+
+        </button>
+
+    </div>
+
+    <!-- TABLE -->
+
+    <div class="glass-card p-3">
+
+        <div class="table-responsive">
+
+            <table class="table table-dark table-hover align-middle">
+
+                <thead>
+
+                <tr>
+
+                    <th>Port</th>
+
+                    <th>Service</th>
+
+                    <th>Status</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody id="resultTable">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
